@@ -10,5 +10,6 @@
     <color name="whiteish">#FAFAFA</color>
     <color name="white">#ffffff</color>
     <color name="black">#000000</color>
+    <color name="grey">#bbbbbb</color>
 
 </resources>

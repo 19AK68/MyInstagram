@@ -3,7 +3,7 @@ package com.ak.user.myinstagram
 import android.content.Intent
 import android.support.v7.app.AppCompatActivity
 import android.util.Log
-import kotlinx.android.synthetic.main.activity_home.*
+import kotlinx.android.synthetic.main.activity_profile.*
 
 abstract class BaseActivity (val navNumber: Int) : AppCompatActivity()
 {
