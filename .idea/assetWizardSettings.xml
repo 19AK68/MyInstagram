@@ -23,7 +23,7 @@
                                           <PersistentState>
                                             <option name="values">
                                               <map>
-                                                <entry key="url" value="jar:file:/C:/Program%20Files/Android/Android%20Studio/plugins/android/lib/android.jar!/images/material_design_icons/content/ic_add_circle_black_24dp.xml" />
+                                                <entry key="url" value="jar:file:/C:/Program%20Files/Android/Android%20Studio/plugins/android/lib/android.jar!/images/material_design_icons/navigation/ic_check_black_24dp.xml" />
                                               </map>
                                             </option>
                                           </PersistentState>
@@ -34,9 +34,9 @@
                                   <option name="values">
                                     <map>
                                       <entry key="imageAsset" value="C:\workspace\MyInstagram\heart.png" />
-                                      <entry key="outputName" value="ic_share" />
+                                      <entry key="outputName" value="ic_check" />
                                       <entry key="theme" value="CUSTOM" />
-                                      <entry key="themeColor" value="c7c7c7" />
+                                      <entry key="themeColor" value="3897f0" />
                                     </map>
                                   </option>
                                 </PersistentState>

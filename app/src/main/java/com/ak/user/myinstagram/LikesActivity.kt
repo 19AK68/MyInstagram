@@ -10,7 +10,7 @@ class LikesActivity :BaseActivity(3) {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContentView(R.layout.activity_profile)
+        setContentView(R.layout.activity_home)
        setupButtonNavigation()
         Log.d(TAG, "onCreate")
 
