@@ -16,6 +16,7 @@ class EditProfileActivity : AppCompatActivity() {
 
         close_image.setOnClickListener{
             finish()
+
         }
     }
 }
