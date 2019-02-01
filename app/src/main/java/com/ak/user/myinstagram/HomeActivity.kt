@@ -4,12 +4,13 @@ import android.content.Intent
 import android.os.Bundle
 import android.util.Log
 import com.google.firebase.auth.FirebaseAuth
+import kotlinx.android.synthetic.main.activity_home.*
 
 
 class HomeActivity : BaseActivity(0) {
 
      private val TAG = "HomeActivity"
-    private lateinit var mAuth: FirebaseAuth
+     private lateinit var mAuth: FirebaseAuth
 
 
 
@@ -20,7 +21,7 @@ class HomeActivity : BaseActivity(0) {
         Log.d(TAG, "onCreate")
 
         mAuth = FirebaseAuth.getInstance()
-        mAuth.signOut()
+
 
 //        auth.signInWithEmailAndPassword("ahdpei68@gmail.com","280367")
 //            .addOnCompleteListener{
@@ -32,8 +33,16 @@ class HomeActivity : BaseActivity(0) {
 //            }
 //
 //
+        sign_out_text.setOnClickListener{
+            mAuth.signOut()
+        }
+        mAuth.addAuthStateListener {
 
-
+            if(it.currentUser==null){
+                startActivity(Intent(this, LoginActivity::class.java))
+                finish()
+            }
+        }
     }
     override fun onStart() {
         super.onStart()
