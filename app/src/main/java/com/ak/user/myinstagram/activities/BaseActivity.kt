@@ -1,8 +1,9 @@
-package com.ak.user.myinstagram
+package com.ak.user.myinstagram.activities
 
 import android.content.Intent
 import android.support.v7.app.AppCompatActivity
 import android.util.Log
+import com.ak.user.myinstagram.R
 import kotlinx.android.synthetic.main.bottom_navigation_view.*
 
 

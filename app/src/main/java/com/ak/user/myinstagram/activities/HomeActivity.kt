@@ -1,8 +1,9 @@
-package com.ak.user.myinstagram
+package com.ak.user.myinstagram.activities
 
 import android.content.Intent
 import android.os.Bundle
 import android.util.Log
+import com.ak.user.myinstagram.R
 import com.google.firebase.auth.FirebaseAuth
 import kotlinx.android.synthetic.main.activity_home.*
 
