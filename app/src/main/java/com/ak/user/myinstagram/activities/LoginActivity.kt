@@ -56,18 +56,14 @@ class LoginActivity : AppCompatActivity(), KeyboardVisibilityEventListener, Text
 
             }
         }
-
-
-
     }
-
 
     override fun onVisibilityChanged(isKeyboardOpen: Boolean) {
         if(isKeyboardOpen){
-            scrollView_login.scrollTo(0,scrollView_login.bottom)
+
             create_account_text.visibility = View.GONE
         } else {
-            scrollView_login.scrollTo(0,scrollView_login.top)
+
             create_account_text.visibility = View.VISIBLE
         }
     }
@@ -78,7 +74,6 @@ class LoginActivity : AppCompatActivity(), KeyboardVisibilityEventListener, Text
     }
 
     private fun validite(email:String,password:String)= email.isNotEmpty()&& password.isNotEmpty()
-
 
     override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {}
 

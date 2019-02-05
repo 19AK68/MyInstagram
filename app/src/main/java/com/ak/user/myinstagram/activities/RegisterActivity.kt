@@ -16,10 +16,14 @@ import com.google.android.gms.tasks.Task
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.database.DatabaseReference
 import com.google.firebase.database.FirebaseDatabase
+import kotlinx.android.synthetic.main.activity_register.*
 import kotlinx.android.synthetic.main.fragment_register_email.*
 import kotlinx.android.synthetic.main.fragment_register_namepass.*
+import net.yslibrary.android.keyboardvisibilityevent.KeyboardVisibilityEvent
+import net.yslibrary.android.keyboardvisibilityevent.KeyboardVisibilityEventListener
 
 class RegisterActivity : AppCompatActivity(), EmailFragment.Listener, NamePassFragment.Listener {
+
 
     private var mEmail:String? = null
     private lateinit var mAuth: FirebaseAuth
@@ -30,6 +34,7 @@ class RegisterActivity : AppCompatActivity(), EmailFragment.Listener, NamePassFr
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_register)
+
 
         mAuth =  FirebaseAuth.getInstance()
         mDbase = FirebaseDatabase.getInstance().reference
@@ -43,12 +48,28 @@ class RegisterActivity : AppCompatActivity(), EmailFragment.Listener, NamePassFr
 
     }
 
+
+
     override fun onNext(email: String) {
         if(email.isNotEmpty())
         {
            mEmail =email
-            supportFragmentManager.beginTransaction().replace(R.id.frame_layout,NamePassFragment())
-                .addToBackStack(null).commit()
+           mAuth.fetchSignInMethodsForEmail(email).addOnCompleteListener{
+               if (it.isSuccessful)
+               {
+                   if(it.result.signInMethods?.isEmpty() !=false)
+                   {
+                       supportFragmentManager.beginTransaction().replace(R.id.frame_layout,NamePassFragment())
+                           .addToBackStack(null).commit()
+                   } else {
+                       showTost("This e-mail already exists")
+                   }
+               } else {
+                   showTost(it.exception!!.message!!)
+               }
+           }
+
+
         } else{
             showTost("Please Enter email")
         }
