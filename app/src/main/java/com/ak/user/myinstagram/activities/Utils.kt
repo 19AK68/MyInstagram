@@ -16,7 +16,7 @@ import java.time.Duration
 
 class ValueEventListenerAdapter(val handler: (DataSnapshot)->Unit) : ValueEventListener {
 
-    private val TAG="ValueEventListenerAdapter"
+    private val TAG = "ValueEventListenerAdapt"
 
     override fun onDataChange(data: DataSnapshot) {
         handler(data)
