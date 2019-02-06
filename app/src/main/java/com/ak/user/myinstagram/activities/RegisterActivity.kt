@@ -40,6 +40,7 @@ class RegisterActivity : AppCompatActivity(), EmailFragment.Listener, NamePassFr
         mDbase = FirebaseDatabase.getInstance().reference
 
         Log.d("RegisterActivity" , "OnCreate")
+
         if(savedInstanceState==null)
         {
             supportFragmentManager.beginTransaction().add(R.id.frame_layout,EmailFragment())
@@ -47,8 +48,6 @@ class RegisterActivity : AppCompatActivity(), EmailFragment.Listener, NamePassFr
         }
 
     }
-
-
 
     override fun onNext(email: String) {
         if(email.isNotEmpty())
@@ -153,7 +152,7 @@ class  EmailFragment :Fragment () {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?)
     {
-
+        coordinateBtnAndInputs(next_btn,email_input)
         next_btn.setOnClickListener{
             val email =  email_input.text.toString()
             mLisener.onNext(email)
@@ -187,6 +186,8 @@ class  NamePassFragment :Fragment () {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?)
     {
+
+        coordinateBtnAndInputs(register_bnt,email_input,pass_input)
 
         register_bnt.setOnClickListener{
             val fullName =  full_name_input.text.toString()
