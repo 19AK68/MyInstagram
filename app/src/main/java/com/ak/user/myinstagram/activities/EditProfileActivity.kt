@@ -19,10 +19,8 @@ class EditProfileActivity : AppCompatActivity() {
 
         Log.d(TAG, "onCreate")
 
-        close_image.setOnClickListener{
-            finish()
-
-        }
+        close_image.setOnClickListener{ finish()  }
+        save_image.setOnClickListener{updateProfile()}
 
         val mAuth = FirebaseAuth.getInstance()
         val database = FirebaseDatabase.getInstance().reference
@@ -39,5 +37,21 @@ class EditProfileActivity : AppCompatActivity() {
 
 
         })
+    }
+
+    private fun updateProfile() {
+        //get user from input
+        //validate
+        val user = User(
+            name = name_input.text.toString(),
+            username = username_input.text.toString(),
+            website = website_input.text.toString(),
+            bio = bio_input.text.toString(),
+            email = email_input.text.toString(),
+            phone = phone_input.text.toString()
+        )
+
+
+
     }
 }
