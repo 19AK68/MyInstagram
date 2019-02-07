@@ -44,7 +44,7 @@ class RegisterActivity : AppCompatActivity(), EmailFragment.Listener, NamePassFr
         if(savedInstanceState==null)
         {
             supportFragmentManager.beginTransaction().add(R.id.frame_layout,EmailFragment())
-                .commit()
+                .commitNow()
         }
 
     }
@@ -52,7 +52,7 @@ class RegisterActivity : AppCompatActivity(), EmailFragment.Listener, NamePassFr
     override fun onNext(email: String) {
         if(email.isNotEmpty())
         {
-           mEmail =email
+           mEmail = email
            mAuth.fetchSignInMethodsForEmail(email).addOnCompleteListener{
                if (it.isSuccessful)
                {
@@ -187,7 +187,7 @@ class  NamePassFragment :Fragment () {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?)
     {
 
-        coordinateBtnAndInputs(register_bnt,email_input,pass_input)
+        coordinateBtnAndInputs(register_bnt,full_name_input,pass_input)
 
         register_bnt.setOnClickListener{
             val fullName =  full_name_input.text.toString()

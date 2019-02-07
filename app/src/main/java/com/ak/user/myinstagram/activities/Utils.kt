@@ -38,7 +38,7 @@ fun Context.showTost(text:String,duration: Int = Toast.LENGTH_SHORT)
     Toast.makeText(this, text,duration).show()
 }
 
-fun coordinateBtnAndInputs(btn: Button,vararg intups:EditText)
+fun coordinateBtnAndInputs(btn: Button,vararg intups: EditText)
 {
     val watcher = object :TextWatcher {
         override fun afterTextChanged(s: Editable?) {
