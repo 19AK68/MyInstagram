@@ -8,6 +8,7 @@ import android.os.Bundle
 import android.os.Environment
 import android.provider.MediaStore
 import android.support.v4.content.FileProvider
+import android.text.Editable
 import android.util.Log
 import android.widget.TextView
 import com.ak.user.myinstagram.R
@@ -64,11 +65,12 @@ class EditProfileActivity : AppCompatActivity(),PasswordDialod.Listener {
                 website_input.setText(mUser.website,TextView.BufferType.EDITABLE)
                 bio_input.setText(mUser.bio,TextView.BufferType.EDITABLE)
                 email_input.setText(mUser.email,TextView.BufferType.EDITABLE)
-                phone_input.setText(mUser.phone.toString(),TextView.BufferType.EDITABLE)
-
+                phone_input.setText(mUser.phone?.toString(),TextView.BufferType.EDITABLE)
+                profile_image.loadUserPhoto(mUser.photo)
 
         })
     }
+
 
     @Throws(IOException::class)
     private fun createImageFile(): File {
@@ -125,6 +127,7 @@ class EditProfileActivity : AppCompatActivity(),PasswordDialod.Listener {
                     mDatabase.child("users/$uid/photo").setValue(photoUrl).addOnCompleteListener{
                         if (it.isSuccessful) {
                             mUser = mUser.copy(photo = photoUrl)
+                            profile_image.loadUserPhoto(mUser.photo)
                         }
                     }
                        
@@ -157,16 +160,18 @@ class EditProfileActivity : AppCompatActivity(),PasswordDialod.Listener {
         }
     }
     private fun readInputs(): User{
-       val phoneString = phone_input.text.toString()
+
         return User(
             name = name_input.text.toString(),
             username = username_input.text.toString(),
-            website = website_input.text.toString(),
-            bio = bio_input.text.toString(),
             email = email_input.text.toString(),
-            phone = if(phoneString.isEmpty()) 0 else phoneString.toLong())
-
+            website = website_input.text.toStringOrNull(),
+            bio = bio_input.text.toStringOrNull(),
+            phone = phone_input.text.toString().toLongOrNull()
+        )
     }
+
+
     override fun onPasswordConfirm(password: String) {
         if(password.isNotEmpty()){
             val credential = EmailAuthProvider.getCredential(mUser.email,password)
@@ -183,7 +188,7 @@ class EditProfileActivity : AppCompatActivity(),PasswordDialod.Listener {
 
 
     private fun updateUser(user: User) {
-        val updatesMap = mutableMapOf<String, Any>()
+        val updatesMap = mutableMapOf<String, Any?>()
         if (user.name != mUser.name) updatesMap["name"] = user.name
         if (user.username != mUser.username) updatesMap["username"] = user.username
         if (user.website != mUser.website) updatesMap["website"] = user.website
@@ -206,9 +211,9 @@ class EditProfileActivity : AppCompatActivity(),PasswordDialod.Listener {
             else -> null
         }
 
-    private  fun DatabaseReference.updateUser(uid:String,updates:Map<String,Any>,onSuccess: () -> Unit){
+    private  fun DatabaseReference.updateUser(uid:String,updates:Map<String,Any?>,onSuccess: () -> Unit){
 
-        child("users").child(mAuth.currentUser!!.uid).updateChildren(updates)
+        child("users").child(uid).updateChildren(updates)
             .addOnCompleteListener{
                 if (it.isSuccessful) {
                    onSuccess()
