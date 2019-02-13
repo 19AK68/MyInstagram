@@ -1,17 +1,32 @@
 package com.ak.user.myinstagram.activities
 
+
+import android.content.Intent
+import android.net.Uri
 import android.support.v7.app.AppCompatActivity
 import android.os.Bundle
+import android.os.Environment
+import android.provider.MediaStore
+import android.support.v4.content.FileProvider
 import android.util.Log
 import android.widget.TextView
 import com.ak.user.myinstagram.R
 import com.ak.user.myinstagram.models.User
 import com.ak.user.myinstagram.views.PasswordDialod
+import com.google.firebase.auth.AuthCredential
 import com.google.firebase.auth.EmailAuthProvider
 import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.auth.FirebaseUser
 import com.google.firebase.database.DatabaseReference
 import com.google.firebase.database.FirebaseDatabase
+import com.google.firebase.storage.FirebaseStorage
+import com.google.firebase.storage.StorageReference
 import kotlinx.android.synthetic.main.activity_edit_profile.*
+import java.io.File
+import java.io.IOException
+
+import java.text.SimpleDateFormat
+import java.util.*
 
 class EditProfileActivity : AppCompatActivity(),PasswordDialod.Listener {
 
@@ -21,6 +36,11 @@ class EditProfileActivity : AppCompatActivity(),PasswordDialod.Listener {
     private lateinit var mPandingUser: User
     private lateinit var mAuth:FirebaseAuth
     private lateinit var mDatabase: DatabaseReference
+    private lateinit var mStorage: StorageReference
+    private val TAKE_PICTURE_REQUEST_CODE = 1
+    val simpleDateFormat = SimpleDateFormat("yyyyMMdd_HHmmss", Locale.US)
+    private lateinit var mImageUri: Uri
+    private lateinit var mCurrentPhotoPath: String
 
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -31,9 +51,12 @@ class EditProfileActivity : AppCompatActivity(),PasswordDialod.Listener {
 
         close_image.setOnClickListener{ finish()  }
         save_image.setOnClickListener{updateProfile()}
+        change_photo_text.setOnClickListener{takeCameraPicture()}
 
         mAuth = FirebaseAuth.getInstance()
         mDatabase = FirebaseDatabase.getInstance().reference
+        mStorage = FirebaseStorage.getInstance().reference
+
         mDatabase.child("users").child(mAuth.currentUser!!.uid).addListenerForSingleValueEvent(ValueEventListenerAdapter {
                mUser =  it.getValue(User::class.java)!!
                 name_input.setText(mUser.name,TextView.BufferType.EDITABLE)
@@ -47,17 +70,77 @@ class EditProfileActivity : AppCompatActivity(),PasswordDialod.Listener {
         })
     }
 
+    @Throws(IOException::class)
+    private fun createImageFile(): File {
+        // Create an image file name
+        val timeStamp: String = simpleDateFormat.format(Date())
+        val storageDir: File = getExternalFilesDir(Environment.DIRECTORY_PICTURES)
+        return File.createTempFile(
+            "JPEG_${timeStamp}_", /* prefix */
+            ".jpg", /* suffix */
+            storageDir /* directory */
+        ).apply {
+            // Save a file: path for use with ACTION_VIEW intents
+            mCurrentPhotoPath = absolutePath
+        }
+    }
+
+
+    private fun takeCameraPicture() {
+        Intent(MediaStore.ACTION_IMAGE_CAPTURE).also { takePictureIntent ->
+            // Ensure that there's a camera activity to handle the intent
+            takePictureIntent.resolveActivity(packageManager)?.also {
+                // Create the File where the photo should go
+                val imageFile: File? = try {
+                    createImageFile()
+                } catch (ex: IOException) {
+                    // Error occurred while creating the File
+
+                    null
+                }
+                // Continue only if the File was successfully created
+                imageFile?.also {
+                    mImageUri = FileProvider.getUriForFile(
+                        this,
+                        "com.ak.user.myinstagram.fileprovider",
+                        it
+                    )
+                    takePictureIntent.putExtra(MediaStore.EXTRA_OUTPUT, mImageUri)
+                    startActivityForResult(takePictureIntent, TAKE_PICTURE_REQUEST_CODE)
+
+                }
+            }
+        }
+
+    }
+
+    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
+        if (requestCode == TAKE_PICTURE_REQUEST_CODE && resultCode == RESULT_OK) {
+            val uid = mAuth.currentUser!!.uid
+            val ref = mStorage.child("users/$uid/photo")
+             ref.putFile(mImageUri).addOnCompleteListener{
+                if(it.isSuccessful){
+                   ref.downloadUrl.addOnCompleteListener{ it ->
+                       val photoUrl=it.result.toString()
+                    mDatabase.child("users/$uid/photo").setValue(photoUrl).addOnCompleteListener{
+                        if (it.isSuccessful) {
+                            mUser = mUser.copy(photo = photoUrl)
+                        }
+                    }
+                       
+                   }
+                }else{
+                    showTost(it.exception!!.message!!)
+                }
+            }
+        }
+    }
+
     private fun updateProfile() {
         //get user from input
         //validate
-         mPandingUser = User(
-            name = name_input.text.toString(),
-            username = username_input.text.toString(),
-            website = website_input.text.toString(),
-            bio = bio_input.text.toString(),
-            email = email_input.text.toString(),
-            phone = phone_input.text.toString().toLong()
-        )
+         mPandingUser = readInputs()
+
 
         val error = validate(mPandingUser)
         if(error == null)
@@ -73,24 +156,32 @@ class EditProfileActivity : AppCompatActivity(),PasswordDialod.Listener {
             showTost(error)
         }
     }
-
-    override fun onPasswordConfirm(password: String) {
-        val credential = EmailAuthProvider.getCredential(mUser.email,password)
-        mAuth.currentUser!!.reauthenticate(credential).addOnCompleteListener{
-            if(it.isSuccessful){
-                mAuth.currentUser!!.updateEmail(mPandingUser.email).addOnCompleteListener{
-                    if(it.isSuccessful){
-                        updateUser(mPandingUser)
-                    }else {
-                        showTost(it.exception!!.message!!)
-                    }
-                }
-            } else {
-                showTost(it.exception!!.message!!)
-            }
-        }
+    private fun readInputs(): User{
+       val phoneString = phone_input.text.toString()
+        return User(
+            name = name_input.text.toString(),
+            username = username_input.text.toString(),
+            website = website_input.text.toString(),
+            bio = bio_input.text.toString(),
+            email = email_input.text.toString(),
+            phone = if(phoneString.isEmpty()) 0 else phoneString.toLong())
 
     }
+    override fun onPasswordConfirm(password: String) {
+        if(password.isNotEmpty()){
+            val credential = EmailAuthProvider.getCredential(mUser.email,password)
+            mAuth.currentUser!!.reauthenticate(credential){
+                    mAuth.currentUser!!.updateEmail(mPandingUser.email){
+                        updateUser(mPandingUser)
+                    }
+            }
+        } else {
+            showTost("You should enter your passwords")
+        }
+    }
+
+
+
     private fun updateUser(user: User) {
         val updatesMap = mutableMapOf<String, Any>()
         if (user.name != mUser.name) updatesMap["name"] = user.name
@@ -100,15 +191,11 @@ class EditProfileActivity : AppCompatActivity(),PasswordDialod.Listener {
         if (user.email != mUser.email) updatesMap["email"] = user.email
         if (user.phone != mUser.phone) updatesMap["phone"] = user.phone
 
-        mDatabase.child("users").child(mAuth.currentUser!!.uid).updateChildren(updatesMap)
-            .addOnCompleteListener{
-                if (it.isSuccessful) {
-                    showTost("Profile saved")
-                    finish()
-                } else {
-                    showTost(it.exception!!.message!!)
-                }
-            }
+        mDatabase.updateUser(mAuth.currentUser!!.uid,updatesMap){
+            showTost("Profile saved")
+            finish()
+
+        }
     }
 
     private fun validate(user: User): String? =
@@ -119,5 +206,37 @@ class EditProfileActivity : AppCompatActivity(),PasswordDialod.Listener {
             else -> null
         }
 
+    private  fun DatabaseReference.updateUser(uid:String,updates:Map<String,Any>,onSuccess: () -> Unit){
+
+        child("users").child(mAuth.currentUser!!.uid).updateChildren(updates)
+            .addOnCompleteListener{
+                if (it.isSuccessful) {
+                   onSuccess()
+                } else {
+                    showTost(it.exception!!.message!!)
+                }
+            }
+    }
+
+    private fun FirebaseUser.updateEmail(email:String,onSuccess: ()-> Unit){
+        updateEmail(email).addOnCompleteListener{
+
+            if(it.isSuccessful){
+                onSuccess()
+            } else {
+                showTost(it.exception!!.message!!)
+            }
+        }
+
+    }
+    private fun FirebaseUser.reauthenticate(credential: AuthCredential,onSuccess: ()-> Unit){
+        reauthenticate(credential).addOnCompleteListener{
+            if(it.isSuccessful){
+                onSuccess()
+            } else {
+                showTost(it.exception!!.message!!)
+            }
+        }
+    }
 
 }
