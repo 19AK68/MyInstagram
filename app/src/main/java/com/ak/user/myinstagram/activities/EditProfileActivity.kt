@@ -8,10 +8,9 @@ import android.support.v7.app.AppCompatActivity
 import android.os.Bundle
 
 import android.util.Log
-import android.widget.TextView
 import com.ak.user.myinstagram.R
 import com.ak.user.myinstagram.models.User
-import com.ak.user.myinstagram.utils.CameraPictureTaker
+import com.ak.user.myinstagram.utils.CameraHelper
 import com.ak.user.myinstagram.utils.FirebaseHelper
 import com.ak.user.myinstagram.utils.ValueEventListenerAdapter
 import com.ak.user.myinstagram.views.PasswordDialod
@@ -32,7 +31,7 @@ class EditProfileActivity : AppCompatActivity(),PasswordDialod.Listener {
 
     private lateinit var mCurrentPhotoPath: String
 
-    private lateinit var mCameraPictureTaker: CameraPictureTaker
+    private lateinit var mCameraPictureTaker: CameraHelper
 
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -41,7 +40,7 @@ class EditProfileActivity : AppCompatActivity(),PasswordDialod.Listener {
 
         Log.d(TAG, "onCreate")
 
-        mCameraPictureTaker = CameraPictureTaker(this)
+        mCameraPictureTaker = CameraHelper(this)
         mfirebaseHelper = FirebaseHelper(this)
 
         close_image.setOnClickListener{ finish()  }
