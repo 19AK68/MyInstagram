@@ -14,11 +14,8 @@ import com.google.firebase.storage.StorageReference
 class FirebaseHelper (private val activity:Activity) {
 
      val mAuth: FirebaseAuth = FirebaseAuth.getInstance()
-    private val mDatabase: DatabaseReference = FirebaseDatabase.getInstance().reference
-            val mStorage: StorageReference = FirebaseStorage.getInstance().reference
-
-
-
+     val mDatabase: DatabaseReference = FirebaseDatabase.getInstance().reference
+     val mStorage: StorageReference = FirebaseStorage.getInstance().reference
 
      fun updateUserPhoto(photoUrl:String,onSuccess: () -> Unit){
 
